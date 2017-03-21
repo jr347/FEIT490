@@ -1,3 +1,42 @@
+<?php
+require_once '/usr/share/php/PhpAmqpLib/autoload.php';
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+require_once ('connect.inc');
+session_start();
+
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+$userN = $_POST["userN"];
+$passw = $_POST["passw"];
+
+$data = array();
+$data['type'] = "login";
+$data['username'] = "$userN";
+$data['password'] = "$passw";
+
+$msg = json_encode($data);
+
+$login_rpc = new RpcClient();
+$response = $login_rpc->call($msg);
+$results = json_decode($response, true);
+//echo " [.] Got ", $results, "\n";
+
+if($results){
+	//session_register("$userN");
+	$_SESSION['username'] = $userN;
+
+	header("location: profile.php");
+}
+else {
+	$error = "Your Username or Password is invalid";
+}
+
+
+//header("Location: profile.html");
+//exit;
+}
+?>
+
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -17,7 +56,7 @@
 
     <div class="container">
 
-      <form method="post" id="login-form" action="/login.php" class="form-signin">
+      <form method="post" id="login-form" action="" class="form-signin">
         <h2 class="form-signin-heading">No0bZ</h2>
         <label for="userN" class="sr-only">Username</label>
         <input type="text" id="userN" name="userN"class="form-control" placeholder="Username" required autofocus>
@@ -31,6 +70,8 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 	<a href="register.html">New User?</a>
       </form>
+	
+	<div style = "text-align:center; font-size:11px; color:#cc0000; margin-top:10px"><?php echo $error; ?></div>
 
     </div> <!-- /container -->
 
